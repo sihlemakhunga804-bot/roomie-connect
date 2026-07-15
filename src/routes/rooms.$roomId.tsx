@@ -97,7 +97,7 @@ function SiteNav() {
 }
 
 function RoomDetailsPage() {
-  const { room } = Route.useLoaderData();
+  const { room } = Route.useLoaderData() as { room: Room };
   const [active, setActive] = useState(0);
 
   return (
