@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import heroImg from "@/assets/hero-roommates.jpg";
 import roomObservatory from "@/assets/room-observatory.jpg";
 import roomBraamfontein from "@/assets/room-braamfontein.jpg";
@@ -79,7 +79,7 @@ function Landing() {
             <span className="font-display text-2xl font-bold tracking-tight">roomie</span>
           </a>
           <div className="hidden gap-8 text-sm font-medium md:flex">
-            <a href="#browse" className="transition-colors hover:text-primary">Find a Room</a>
+            <Link to="/browse" className="transition-colors hover:text-primary">Find a Room</Link>
             <a href="#landlords" className="transition-colors hover:text-primary">List a Space</a>
             <a href="#how" className="transition-colors hover:text-primary">How it Works</a>
             <a href="#faq" className="transition-colors hover:text-primary">FAQ</a>
