@@ -415,7 +415,12 @@ function BrowsePage() {
             ) : (
               <div className="grid gap-8 sm:grid-cols-2">
                 {filtered.map((r) => (
-                  <article key={r.id} className="group">
+                  <Link
+                    key={r.id}
+                    to="/rooms/$roomId"
+                    params={{ roomId: r.id }}
+                    className="group block"
+                  >
                     <div className="mb-5 aspect-[4/3] w-full overflow-hidden rounded-3xl bg-muted">
                       <img
                         src={r.img}
@@ -425,7 +430,7 @@ function BrowsePage() {
                       />
                     </div>
                     <div className="mb-2 flex items-start justify-between gap-4">
-                      <h3 className="text-lg font-medium">{r.title}</h3>
+                      <h3 className="text-lg font-medium group-hover:text-primary">{r.title}</h3>
                       <span className="whitespace-nowrap font-mono text-primary">
                         R{r.price.toLocaleString()}
                         <small className="ml-1 text-[10px] uppercase text-muted-foreground">/pm</small>
@@ -447,7 +452,7 @@ function BrowsePage() {
                         </span>
                       ))}
                     </div>
-                  </article>
+                  </Link>
                 ))}
               </div>
             )}
