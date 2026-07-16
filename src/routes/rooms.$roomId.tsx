@@ -108,6 +108,20 @@ function SiteNav() {
 function RoomDetailsPage() {
   const { room } = Route.useLoaderData() as { room: Room };
   const [active, setActive] = useState(0);
+  const [applyOpen, setApplyOpen] = useState(false);
+  const [application, setApplication] = useState<Application | undefined>(undefined);
+
+  useEffect(() => {
+    const sync = () => setApplication(getApplicationForRoom(room.id));
+    sync();
+    window.addEventListener("roomie:applications:changed", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("roomie:applications:changed", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, [room.id]);
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
