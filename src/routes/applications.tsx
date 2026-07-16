@@ -61,6 +61,7 @@ function ApplicationsPage() {
           <div className="hidden gap-8 text-sm font-medium md:flex">
             <Link to="/browse" className="hover:text-primary">Find a Room</Link>
             <Link to="/applications" className="text-primary">Applications</Link>
+            <Link to="/landlord" className="hover:text-primary">Landlord</Link>
           </div>
           <button className="rounded-full border border-border px-5 py-2 text-sm font-medium">
             Login
