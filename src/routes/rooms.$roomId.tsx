@@ -1,6 +1,15 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getRoom, type Room } from "@/data/rooms";
+import { ApplyDialog } from "@/components/ApplyDialog";
+import {
+  getApplicationForRoom,
+  withdrawApplication,
+  STATUS_META,
+  STATUS_ORDER,
+  type Application,
+} from "@/lib/applications";
+
 
 export const Route = createFileRoute("/rooms/$roomId")({
   loader: ({ params }) => {
