@@ -1,6 +1,15 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getRoom, type Room } from "@/data/rooms";
+import { ApplyDialog } from "@/components/ApplyDialog";
+import {
+  getApplicationForRoom,
+  withdrawApplication,
+  STATUS_META,
+  STATUS_ORDER,
+  type Application,
+} from "@/lib/applications";
+
 
 export const Route = createFileRoute("/rooms/$roomId")({
   loader: ({ params }) => {
@@ -99,6 +108,20 @@ function SiteNav() {
 function RoomDetailsPage() {
   const { room } = Route.useLoaderData() as { room: Room };
   const [active, setActive] = useState(0);
+  const [applyOpen, setApplyOpen] = useState(false);
+  const [application, setApplication] = useState<Application | undefined>(undefined);
+
+  useEffect(() => {
+    const sync = () => setApplication(getApplicationForRoom(room.id));
+    sync();
+    window.addEventListener("roomie:applications:changed", sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("roomie:applications:changed", sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, [room.id]);
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -263,23 +286,120 @@ function RoomDetailsPage() {
                 <CompatibilityBar label="Social vibe" value={room.compatibility.social} />
               </div>
 
-              <button className="mb-2 w-full rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90">
-                Request to move in
-              </button>
-              <button className="w-full rounded-full border border-border px-6 py-3 text-sm font-medium transition-all hover:bg-foreground hover:text-background">
-                Message {room.landlord.name.split(" ")[0]}
-              </button>
-
-              <p className="mt-4 text-center text-[11px] text-muted-foreground">
-                No booking fees. Cancel free within 24 hrs.
-              </p>
+              {application ? (
+                <ApplicationStatusCard
+                  application={application}
+                  onWithdraw={() => {
+                    withdrawApplication(application.id);
+                    setApplication(undefined);
+                  }}
+                />
+              ) : (
+                <>
+                  <button
+                    onClick={() => setApplyOpen(true)}
+                    className="mb-2 w-full rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
+                  >
+                    Apply for this room
+                  </button>
+                  <button className="w-full rounded-full border border-border px-6 py-3 text-sm font-medium transition-all hover:bg-foreground hover:text-background">
+                    Message {room.landlord.name.split(" ")[0]}
+                  </button>
+                  <p className="mt-4 text-center text-[11px] text-muted-foreground">
+                    No booking fees. Withdraw anytime before the landlord replies.
+                  </p>
+                </>
+              )}
             </div>
+            <p className="mt-3 text-center text-[11px] text-muted-foreground">
+              <Link to="/applications" className="hover:text-primary">
+                Track all your applications →
+              </Link>
+            </p>
           </aside>
         </div>
       </main>
+
+      <ApplyDialog
+        open={applyOpen}
+        onOpenChange={setApplyOpen}
+        room={{ id: room.id, title: room.title, img: room.img }}
+        onSubmitted={(app) => {
+          setApplication(app);
+          setApplyOpen(false);
+        }}
+      />
     </div>
   );
 }
+
+function ApplicationStatusCard({
+  application,
+  onWithdraw,
+}: {
+  application: Application;
+  onWithdraw: () => void;
+}) {
+  const meta = STATUS_META[application.status];
+  const isDeclined = application.status === "declined";
+  return (
+    <div>
+      <p className="mb-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        Application status
+      </p>
+      <div className="mb-3 flex items-baseline gap-2">
+        <span className="font-display text-2xl text-primary">{meta.label}</span>
+      </div>
+      <p className="mb-4 text-sm text-foreground/80">{meta.description}</p>
+
+      <ol className="mb-4 space-y-2">
+        {STATUS_ORDER.map((s) => {
+          const done = STATUS_META[s].step <= meta.step && !isDeclined;
+          const current = s === application.status;
+          return (
+            <li key={s} className="flex items-center gap-3 text-xs">
+              <span
+                className={`flex size-5 items-center justify-center rounded-full border text-[10px] ${
+                  done
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border text-muted-foreground"
+                }`}
+              >
+                {done ? "✓" : STATUS_META[s].step}
+              </span>
+              <span className={current ? "font-medium" : "text-muted-foreground"}>
+                {STATUS_META[s].label}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+
+      <div className="mb-4 rounded-2xl bg-muted/50 p-3 text-[11px] text-muted-foreground">
+        Submitted{" "}
+        {new Date(application.submittedAt).toLocaleDateString("en-ZA", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })}
+      </div>
+
+      <Link
+        to="/applications"
+        className="mb-2 block w-full rounded-full bg-primary px-6 py-3 text-center text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+      >
+        View all applications
+      </Link>
+      <button
+        onClick={onWithdraw}
+        className="w-full rounded-full border border-border px-6 py-3 text-sm font-medium transition-all hover:bg-destructive hover:text-destructive-foreground"
+      >
+        Withdraw application
+      </button>
+    </div>
+  );
+}
+
 
 function LeaseRow({ label, value }: { label: string; value: string }) {
   return (

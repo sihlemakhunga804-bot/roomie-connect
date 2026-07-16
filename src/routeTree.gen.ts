@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as BrowseRouteImport } from './routes/browse'
+import { Route as ApplicationsRouteImport } from './routes/applications'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RoomsRoomIdRouteImport } from './routes/rooms.$roomId'
 
@@ -22,6 +23,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const BrowseRoute = BrowseRouteImport.update({
   id: '/browse',
   path: '/browse',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApplicationsRoute = ApplicationsRouteImport.update({
+  id: '/applications',
+  path: '/applications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -37,12 +43,14 @@ const RoomsRoomIdRoute = RoomsRoomIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/applications': typeof ApplicationsRoute
   '/browse': typeof BrowseRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/rooms/$roomId': typeof RoomsRoomIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/applications': typeof ApplicationsRoute
   '/browse': typeof BrowseRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/rooms/$roomId': typeof RoomsRoomIdRoute
@@ -50,20 +58,33 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/applications': typeof ApplicationsRoute
   '/browse': typeof BrowseRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/rooms/$roomId': typeof RoomsRoomIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/browse' | '/sitemap.xml' | '/rooms/$roomId'
+  fullPaths:
+    | '/'
+    | '/applications'
+    | '/browse'
+    | '/sitemap.xml'
+    | '/rooms/$roomId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/browse' | '/sitemap.xml' | '/rooms/$roomId'
-  id: '__root__' | '/' | '/browse' | '/sitemap.xml' | '/rooms/$roomId'
+  to: '/' | '/applications' | '/browse' | '/sitemap.xml' | '/rooms/$roomId'
+  id:
+    | '__root__'
+    | '/'
+    | '/applications'
+    | '/browse'
+    | '/sitemap.xml'
+    | '/rooms/$roomId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApplicationsRoute: typeof ApplicationsRoute
   BrowseRoute: typeof BrowseRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   RoomsRoomIdRoute: typeof RoomsRoomIdRoute
@@ -85,6 +106,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BrowseRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/applications': {
+      id: '/applications'
+      path: '/applications'
+      fullPath: '/applications'
+      preLoaderRoute: typeof ApplicationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -104,6 +132,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApplicationsRoute: ApplicationsRoute,
   BrowseRoute: BrowseRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   RoomsRoomIdRoute: RoomsRoomIdRoute,
