@@ -1,12 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
   listApplications,
   withdrawApplication,
   STATUS_META,
   STATUS_ORDER,
+  listNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+  clearNotifications,
   type Application,
   type ApplicationStatus,
+  type AppNotification,
 } from "@/lib/applications";
 
 export const Route = createFileRoute("/applications")({
