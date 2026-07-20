@@ -84,9 +84,12 @@ function Landing() {
             <a href="#how" className="transition-colors hover:text-primary">How it Works</a>
             <a href="#faq" className="transition-colors hover:text-primary">FAQ</a>
           </div>
-          <button className="rounded-full border border-border px-5 py-2 text-sm font-medium transition-all hover:bg-foreground hover:text-background">
+          <Link
+            to="/landlord"
+            className="rounded-full border border-border px-5 py-2 text-sm font-medium transition-all hover:bg-foreground hover:text-background"
+          >
             Login
-          </button>
+          </Link>
         </div>
       </nav>
 
@@ -112,9 +115,12 @@ function Landing() {
               <button className="rounded-full bg-primary px-8 py-4 text-lg font-medium text-primary-foreground transition-all hover:-translate-y-1 hover:shadow-xl">
                 I need a room
               </button>
-              <button className="rounded-full bg-secondary px-8 py-4 text-lg font-medium text-secondary-foreground transition-all hover:-translate-y-1 hover:shadow-xl">
+              <Link
+                to="/landlord/signup"
+                className="rounded-full bg-secondary px-8 py-4 text-lg font-medium text-secondary-foreground transition-all hover:-translate-y-1 hover:shadow-xl"
+              >
                 I have a room
-              </button>
+              </Link>
             </div>
           </div>
 
@@ -255,9 +261,12 @@ function Landing() {
                 We vet tenants so you don't have to. Find someone who respects your home and your
                 routine — and pays rent on time.
               </p>
-              <button className="rounded-full bg-foreground px-6 py-3 font-medium text-background transition-transform hover:scale-105">
+              <Link
+                to="/landlord/signup"
+                className="inline-block rounded-full bg-foreground px-6 py-3 font-medium text-background transition-transform hover:scale-105"
+              >
                 Become a Landlord
-              </button>
+              </Link>
             </div>
             <div className="grid flex-1 grid-cols-2 gap-4">
               {[
