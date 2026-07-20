@@ -14,6 +14,7 @@ import { Route as LandlordRouteImport } from './routes/landlord'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as ApplicationsRouteImport } from './routes/applications'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SettingsNotificationsRouteImport } from './routes/settings.notifications'
 import { Route as RoomsRoomIdRouteImport } from './routes/rooms.$roomId'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -41,6 +42,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsNotificationsRoute = SettingsNotificationsRouteImport.update({
+  id: '/settings/notifications',
+  path: '/settings/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RoomsRoomIdRoute = RoomsRoomIdRouteImport.update({
   id: '/rooms/$roomId',
   path: '/rooms/$roomId',
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/landlord': typeof LandlordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/rooms/$roomId': typeof RoomsRoomIdRoute
+  '/settings/notifications': typeof SettingsNotificationsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/landlord': typeof LandlordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/rooms/$roomId': typeof RoomsRoomIdRoute
+  '/settings/notifications': typeof SettingsNotificationsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +79,7 @@ export interface FileRoutesById {
   '/landlord': typeof LandlordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/rooms/$roomId': typeof RoomsRoomIdRoute
+  '/settings/notifications': typeof SettingsNotificationsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +90,7 @@ export interface FileRouteTypes {
     | '/landlord'
     | '/sitemap.xml'
     | '/rooms/$roomId'
+    | '/settings/notifications'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -89,6 +99,7 @@ export interface FileRouteTypes {
     | '/landlord'
     | '/sitemap.xml'
     | '/rooms/$roomId'
+    | '/settings/notifications'
   id:
     | '__root__'
     | '/'
@@ -97,6 +108,7 @@ export interface FileRouteTypes {
     | '/landlord'
     | '/sitemap.xml'
     | '/rooms/$roomId'
+    | '/settings/notifications'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,6 +118,7 @@ export interface RootRouteChildren {
   LandlordRoute: typeof LandlordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   RoomsRoomIdRoute: typeof RoomsRoomIdRoute
+  SettingsNotificationsRoute: typeof SettingsNotificationsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -145,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings/notifications': {
+      id: '/settings/notifications'
+      path: '/settings/notifications'
+      fullPath: '/settings/notifications'
+      preLoaderRoute: typeof SettingsNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/rooms/$roomId': {
       id: '/rooms/$roomId'
       path: '/rooms/$roomId'
@@ -162,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   LandlordRoute: LandlordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   RoomsRoomIdRoute: RoomsRoomIdRoute,
+  SettingsNotificationsRoute: SettingsNotificationsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
