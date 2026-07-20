@@ -104,15 +104,23 @@ function ApplicationsPage() {
       </nav>
 
       <main className="mx-auto max-w-5xl px-6 py-12">
-        <header className="mb-8">
-          <p className="mb-2 font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
-            Your applications
-          </p>
-          <h1 className="font-display text-4xl md:text-5xl">Where you're at</h1>
-          <p className="mt-2 max-w-xl text-muted-foreground">
-            Every room you've applied to, in one place. Statuses update as landlords
-            review your details.
-          </p>
+        <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="mb-2 font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              Your applications
+            </p>
+            <h1 className="font-display text-4xl md:text-5xl">Where you're at</h1>
+            <p className="mt-2 max-w-xl text-muted-foreground">
+              Every room you've applied to, in one place. Statuses update as landlords
+              review your details.
+            </p>
+          </div>
+          <Link
+            to="/settings/notifications"
+            className="rounded-full border border-border px-4 py-2 text-xs font-medium hover:bg-muted"
+          >
+            Notification settings
+          </Link>
         </header>
 
         {notifs.length > 0 && (
