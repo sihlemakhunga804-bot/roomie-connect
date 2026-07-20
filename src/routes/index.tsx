@@ -85,7 +85,7 @@ function Landing() {
             <a href="#faq" className="transition-colors hover:text-primary">FAQ</a>
           </div>
           <Link
-            to="/landlord"
+            to="/login"
             className="rounded-full border border-border px-5 py-2 text-sm font-medium transition-all hover:bg-foreground hover:text-background"
           >
             Login
@@ -112,9 +112,12 @@ function Landing() {
               landlords, and rooms that actually feel like home.
             </p>
             <div className="flex flex-wrap gap-4">
-              <button className="rounded-full bg-primary px-8 py-4 text-lg font-medium text-primary-foreground transition-all hover:-translate-y-1 hover:shadow-xl">
+              <Link
+                to="/browse"
+                className="rounded-full bg-primary px-8 py-4 text-lg font-medium text-primary-foreground transition-all hover:-translate-y-1 hover:shadow-xl"
+              >
                 I need a room
-              </button>
+              </Link>
               <Link
                 to="/landlord/signup"
                 className="rounded-full bg-secondary px-8 py-4 text-lg font-medium text-secondary-foreground transition-all hover:-translate-y-1 hover:shadow-xl"
