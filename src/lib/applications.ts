@@ -193,20 +193,8 @@ function writeNotifs(items: AppNotification[]) {
 function pushNotification(
   n: Omit<AppNotification, "id" | "createdAt" | "read">,
 ) {
-  // Lazy import to avoid a circular type dep at module init.
-  let prefs: import("./notification-settings").NotificationPrefs | null = null;
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require("./notification-settings") as typeof import("./notification-settings");
-    prefs = mod.loadPrefs();
-  } catch {
-    prefs = null;
-  }
-  const channels = prefs?.[n.kind] ?? {
-    in_app: true,
-    email: true,
-    push: true,
-  };
+  const prefs = loadPrefs();
+  const channels = prefs[n.kind];
 
   if (channels.in_app) {
     const item: AppNotification = {
