@@ -113,10 +113,111 @@ export function withdrawApplication(id: string) {
 }
 
 export function updateStatus(id: string, status: ApplicationStatus) {
-  const apps = read().map((a) =>
+  const current = read();
+  const prev = current.find((a) => a.id === id);
+  const apps = current.map((a) =>
     a.id === id ? { ...a, status, updatedAt: new Date().toISOString() } : a,
   );
   write(apps);
+  if (prev && prev.status !== status) {
+    const wasDecided = prev.status === "accepted" || prev.status === "declined";
+    if (status === "accepted") {
+      pushNotification({
+        applicationId: id,
+        roomId: prev.roomId,
+        roomTitle: prev.roomTitle,
+        kind: "accepted",
+        title: "You're in! 🎉",
+        body: `The landlord accepted your application for ${prev.roomTitle}.`,
+      });
+    } else if (status === "declined") {
+      pushNotification({
+        applicationId: id,
+        roomId: prev.roomId,
+        roomTitle: prev.roomTitle,
+        kind: "declined",
+        title: "Not this time",
+        body: `The landlord passed on your application for ${prev.roomTitle}.`,
+      });
+    } else if (wasDecided) {
+      pushNotification({
+        applicationId: id,
+        roomId: prev.roomId,
+        roomTitle: prev.roomTitle,
+        kind: "reopened",
+        title: "Application reopened",
+        body: `The landlord reopened your application for ${prev.roomTitle}.`,
+      });
+    }
+  }
+}
+
+// -------- Notifications --------
+
+export type NotificationKind = "accepted" | "declined" | "reopened";
+
+export type AppNotification = {
+  id: string;
+  applicationId: string;
+  roomId: string;
+  roomTitle: string;
+  kind: NotificationKind;
+  title: string;
+  body: string;
+  createdAt: string;
+  read: boolean;
+};
+
+const NOTIF_KEY = "roomie:notifications:v1";
+
+function readNotifs(): AppNotification[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(NOTIF_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as AppNotification[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeNotifs(items: AppNotification[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(NOTIF_KEY, JSON.stringify(items));
+  window.dispatchEvent(new CustomEvent("roomie:notifications:changed"));
+}
+
+function pushNotification(
+  n: Omit<AppNotification, "id" | "createdAt" | "read">,
+) {
+  const item: AppNotification = {
+    ...n,
+    id: `ntf_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
+    createdAt: new Date().toISOString(),
+    read: false,
+  };
+  writeNotifs([item, ...readNotifs()].slice(0, 50));
+}
+
+export function listNotifications(): AppNotification[] {
+  return readNotifs().sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+}
+
+export function unreadNotificationCount(): number {
+  return readNotifs().filter((n) => !n.read).length;
+}
+
+export function markNotificationRead(id: string) {
+  writeNotifs(readNotifs().map((n) => (n.id === id ? { ...n, read: true } : n)));
+}
+
+export function markAllNotificationsRead() {
+  writeNotifs(readNotifs().map((n) => ({ ...n, read: true })));
+}
+
+export function clearNotifications() {
+  writeNotifs([]);
 }
 
 export const STATUS_META: Record<
