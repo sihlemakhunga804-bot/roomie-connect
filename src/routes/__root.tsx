@@ -85,14 +85,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "ROOMIE matches South African tenants with rooms, flats and compatible roommates across all 9 provinces. Verified listings, compatibility scores, secure messaging.",
       },
       { name: "author", content: "ROOMIE" },
-      { property: "og:title", content: "ROOMIE — Find your people, then your home" },
+      { property: "og:title", content: "ROOMIE — Find your people, then your home | South Africa" },
       {
         property: "og:description",
         content:
-          "South Africa's roommate-matching rental platform. Verified rooms, compatibility scores, all 9 provinces.",
+          "ROOMIE matches South African tenants with rooms, flats and compatible roommates across all 9 provinces. Verified listings, compatibility scores, secure messaging.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "ROOMIE — Find your people, then your home | South Africa" },
+      { name: "twitter:description", content: "ROOMIE matches South African tenants with rooms, flats and compatible roommates across all 9 provinces. Verified listings, compatibility scores, secure messaging." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/SzWhVoyh4tNOGac0yptI5yaGHb03/social-images/social-1784537792380-Desktop_view_screenshot.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/SzWhVoyh4tNOGac0yptI5yaGHb03/social-images/social-1784537792380-Desktop_view_screenshot.webp" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
