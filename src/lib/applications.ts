@@ -191,13 +191,50 @@ function writeNotifs(items: AppNotification[]) {
 function pushNotification(
   n: Omit<AppNotification, "id" | "createdAt" | "read">,
 ) {
-  const item: AppNotification = {
-    ...n,
-    id: `ntf_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
-    createdAt: new Date().toISOString(),
-    read: false,
+  // Lazy import to avoid a circular type dep at module init.
+  let prefs: import("./notification-settings").NotificationPrefs | null = null;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require("./notification-settings") as typeof import("./notification-settings");
+    prefs = mod.loadPrefs();
+  } catch {
+    prefs = null;
+  }
+  const channels = prefs?.[n.kind] ?? {
+    in_app: true,
+    email: true,
+    push: true,
   };
-  writeNotifs([item, ...readNotifs()].slice(0, 50));
+
+  if (channels.in_app) {
+    const item: AppNotification = {
+      ...n,
+      id: `ntf_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`,
+      createdAt: new Date().toISOString(),
+      read: false,
+    };
+    writeNotifs([item, ...readNotifs()].slice(0, 50));
+  }
+
+  if (channels.email && typeof window !== "undefined") {
+    // Mock email delivery — logged for demo purposes.
+    console.info(
+      `[roomie:email] to tenant · ${n.title} — ${n.body} (room: ${n.roomTitle})`,
+    );
+  }
+
+  if (
+    channels.push &&
+    typeof window !== "undefined" &&
+    "Notification" in window &&
+    Notification.permission === "granted"
+  ) {
+    try {
+      new Notification(n.title, { body: n.body, tag: n.applicationId });
+    } catch {
+      // ignore
+    }
+  }
 }
 
 export function listNotifications(): AppNotification[] {
