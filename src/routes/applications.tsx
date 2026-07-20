@@ -41,20 +41,48 @@ const FILTERS: { key: "all" | ApplicationStatus; label: string }[] = [
 
 function ApplicationsPage() {
   const [apps, setApps] = useState<Application[]>([]);
+  const [notifs, setNotifs] = useState<AppNotification[]>([]);
   const [filter, setFilter] = useState<"all" | ApplicationStatus>("all");
+  const seenIds = useRef<Set<string>>(new Set());
+  const hydrated = useRef(false);
 
   useEffect(() => {
-    const sync = () => setApps(listApplications());
-    sync();
-    window.addEventListener("roomie:applications:changed", sync);
-    window.addEventListener("storage", sync);
+    const syncApps = () => setApps(listApplications());
+    const syncNotifs = () => {
+      const next = listNotifications();
+      if (hydrated.current) {
+        for (const n of next) {
+          if (!seenIds.current.has(n.id)) {
+            const fn =
+              n.kind === "accepted"
+                ? toast.success
+                : n.kind === "declined"
+                  ? toast.error
+                  : toast;
+            fn(n.title, { description: n.body });
+          }
+        }
+      }
+      seenIds.current = new Set(next.map((n) => n.id));
+      setNotifs(next);
+      hydrated.current = true;
+    };
+    syncApps();
+    syncNotifs();
+    window.addEventListener("roomie:applications:changed", syncApps);
+    window.addEventListener("roomie:notifications:changed", syncNotifs);
+    window.addEventListener("storage", syncApps);
+    window.addEventListener("storage", syncNotifs);
     return () => {
-      window.removeEventListener("roomie:applications:changed", sync);
-      window.removeEventListener("storage", sync);
+      window.removeEventListener("roomie:applications:changed", syncApps);
+      window.removeEventListener("roomie:notifications:changed", syncNotifs);
+      window.removeEventListener("storage", syncApps);
+      window.removeEventListener("storage", syncNotifs);
     };
   }, []);
 
   const filtered = filter === "all" ? apps : apps.filter((a) => a.status === filter);
+  const unreadCount = notifs.filter((n) => !n.read).length;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
