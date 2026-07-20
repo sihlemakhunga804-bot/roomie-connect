@@ -1,12 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
   listApplications,
   withdrawApplication,
   STATUS_META,
   STATUS_ORDER,
+  listNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+  clearNotifications,
   type Application,
   type ApplicationStatus,
+  type AppNotification,
 } from "@/lib/applications";
 
 export const Route = createFileRoute("/applications")({
@@ -35,20 +41,48 @@ const FILTERS: { key: "all" | ApplicationStatus; label: string }[] = [
 
 function ApplicationsPage() {
   const [apps, setApps] = useState<Application[]>([]);
+  const [notifs, setNotifs] = useState<AppNotification[]>([]);
   const [filter, setFilter] = useState<"all" | ApplicationStatus>("all");
+  const seenIds = useRef<Set<string>>(new Set());
+  const hydrated = useRef(false);
 
   useEffect(() => {
-    const sync = () => setApps(listApplications());
-    sync();
-    window.addEventListener("roomie:applications:changed", sync);
-    window.addEventListener("storage", sync);
+    const syncApps = () => setApps(listApplications());
+    const syncNotifs = () => {
+      const next = listNotifications();
+      if (hydrated.current) {
+        for (const n of next) {
+          if (!seenIds.current.has(n.id)) {
+            const fn =
+              n.kind === "accepted"
+                ? toast.success
+                : n.kind === "declined"
+                  ? toast.error
+                  : toast;
+            fn(n.title, { description: n.body });
+          }
+        }
+      }
+      seenIds.current = new Set(next.map((n) => n.id));
+      setNotifs(next);
+      hydrated.current = true;
+    };
+    syncApps();
+    syncNotifs();
+    window.addEventListener("roomie:applications:changed", syncApps);
+    window.addEventListener("roomie:notifications:changed", syncNotifs);
+    window.addEventListener("storage", syncApps);
+    window.addEventListener("storage", syncNotifs);
     return () => {
-      window.removeEventListener("roomie:applications:changed", sync);
-      window.removeEventListener("storage", sync);
+      window.removeEventListener("roomie:applications:changed", syncApps);
+      window.removeEventListener("roomie:notifications:changed", syncNotifs);
+      window.removeEventListener("storage", syncApps);
+      window.removeEventListener("storage", syncNotifs);
     };
   }, []);
 
   const filtered = filter === "all" ? apps : apps.filter((a) => a.status === filter);
+  const unreadCount = notifs.filter((n) => !n.read).length;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -80,6 +114,89 @@ function ApplicationsPage() {
             review your details.
           </p>
         </header>
+
+        {notifs.length > 0 && (
+          <section
+            aria-label="Landlord updates"
+            className="mb-8 overflow-hidden rounded-3xl border border-border bg-card"
+          >
+            <header className="flex items-center justify-between gap-3 border-b border-border p-4">
+              <div className="flex items-center gap-2">
+                <span className="relative inline-flex size-2 rounded-full bg-primary">
+                  {unreadCount > 0 && (
+                    <span className="absolute inset-0 animate-ping rounded-full bg-primary/60" />
+                  )}
+                </span>
+                <h2 className="font-display text-lg">
+                  Updates from landlords
+                </h2>
+                {unreadCount > 0 && (
+                  <span className="rounded-full bg-primary px-2 py-0.5 font-mono text-[10px] text-primary-foreground">
+                    {unreadCount} new
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                {unreadCount > 0 && (
+                  <button
+                    onClick={() => markAllNotificationsRead()}
+                    className="rounded-full border border-border px-3 py-1 text-[11px] font-medium hover:bg-muted"
+                  >
+                    Mark all read
+                  </button>
+                )}
+                <button
+                  onClick={() => clearNotifications()}
+                  className="rounded-full border border-border px-3 py-1 text-[11px] font-medium hover:bg-muted"
+                >
+                  Clear
+                </button>
+              </div>
+            </header>
+            <ul className="divide-y divide-border">
+              {notifs.slice(0, 6).map((n) => (
+                <li
+                  key={n.id}
+                  className={`flex items-start gap-3 p-4 ${
+                    n.read ? "opacity-70" : ""
+                  }`}
+                >
+                  <span
+                    className={`mt-1 inline-block size-2 shrink-0 rounded-full ${
+                      n.kind === "accepted"
+                        ? "bg-primary"
+                        : n.kind === "declined"
+                          ? "bg-destructive"
+                          : "bg-secondary"
+                    }`}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">{n.title}</p>
+                    <p className="text-xs text-muted-foreground">{n.body}</p>
+                    <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                      {new Date(n.createdAt).toLocaleString("en-ZA", {
+                        day: "numeric",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                  <Link
+                    to="/rooms/$roomId"
+                    params={{ roomId: n.roomId }}
+                    onClick={() => markNotificationRead(n.id)}
+                    className="shrink-0 rounded-full border border-border px-3 py-1 text-[11px] font-medium hover:bg-muted"
+                  >
+                    View room
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+
 
         <div className="mb-6 flex flex-wrap gap-2">
           {FILTERS.map((f) => {
