@@ -113,16 +113,16 @@ function Landing() {
             </p>
             <div className="flex flex-wrap gap-4">
               <Link
-                to="/browse"
+                to="/signup"
                 className="rounded-full bg-primary px-8 py-4 text-lg font-medium text-primary-foreground transition-all hover:-translate-y-1 hover:shadow-xl"
               >
-                I need a room
+                Get Started
               </Link>
               <Link
-                to="/landlord/signup"
+                to="/login"
                 className="rounded-full bg-secondary px-8 py-4 text-lg font-medium text-secondary-foreground transition-all hover:-translate-y-1 hover:shadow-xl"
               >
-                I have a room
+                Sign In
               </Link>
             </div>
           </div>
@@ -265,7 +265,7 @@ function Landing() {
                 routine — and pays rent on time.
               </p>
               <Link
-                to="/landlord/signup"
+                to="/signup"
                 className="inline-block rounded-full bg-foreground px-6 py-3 font-medium text-background transition-transform hover:scale-105"
               >
                 Become a Landlord
