@@ -42,7 +42,7 @@ function LoginPage() {
     setIsLoading(true);
     // Simulate network delay
     setTimeout(() => {
-      const user = login(data.email, data.password, data.rememberMe);
+      const user = login(data.email, data.password, data.rememberMe ?? false);
       setIsLoading(false);
 
       if (!user) {
