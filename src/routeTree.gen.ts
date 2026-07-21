@@ -10,21 +10,34 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as LandlordRouteImport } from './routes/landlord'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as ApplicationsRouteImport } from './routes/applications'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SettingsNotificationsRouteImport } from './routes/settings.notifications'
 import { Route as RoomsRoomIdRouteImport } from './routes/rooms.$roomId'
+import { Route as LandlordSignupRouteImport } from './routes/landlord.signup'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LandlordRoute = LandlordRouteImport.update({
   id: '/landlord',
   path: '/landlord',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BrowseRoute = BrowseRouteImport.update({
@@ -52,13 +65,21 @@ const RoomsRoomIdRoute = RoomsRoomIdRouteImport.update({
   path: '/rooms/$roomId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LandlordSignupRoute = LandlordSignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => LandlordRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/applications': typeof ApplicationsRoute
   '/browse': typeof BrowseRoute
-  '/landlord': typeof LandlordRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/landlord': typeof LandlordRouteWithChildren
+  '/login': typeof LoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/landlord/signup': typeof LandlordSignupRoute
   '/rooms/$roomId': typeof RoomsRoomIdRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
 }
@@ -66,8 +87,11 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/applications': typeof ApplicationsRoute
   '/browse': typeof BrowseRoute
-  '/landlord': typeof LandlordRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/landlord': typeof LandlordRouteWithChildren
+  '/login': typeof LoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/landlord/signup': typeof LandlordSignupRoute
   '/rooms/$roomId': typeof RoomsRoomIdRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
 }
@@ -76,8 +100,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/applications': typeof ApplicationsRoute
   '/browse': typeof BrowseRoute
-  '/landlord': typeof LandlordRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/landlord': typeof LandlordRouteWithChildren
+  '/login': typeof LoginRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/landlord/signup': typeof LandlordSignupRoute
   '/rooms/$roomId': typeof RoomsRoomIdRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
 }
@@ -87,8 +114,11 @@ export interface FileRouteTypes {
     | '/'
     | '/applications'
     | '/browse'
+    | '/forgot-password'
     | '/landlord'
+    | '/login'
     | '/sitemap.xml'
+    | '/landlord/signup'
     | '/rooms/$roomId'
     | '/settings/notifications'
   fileRoutesByTo: FileRoutesByTo
@@ -96,8 +126,11 @@ export interface FileRouteTypes {
     | '/'
     | '/applications'
     | '/browse'
+    | '/forgot-password'
     | '/landlord'
+    | '/login'
     | '/sitemap.xml'
+    | '/landlord/signup'
     | '/rooms/$roomId'
     | '/settings/notifications'
   id:
@@ -105,8 +138,11 @@ export interface FileRouteTypes {
     | '/'
     | '/applications'
     | '/browse'
+    | '/forgot-password'
     | '/landlord'
+    | '/login'
     | '/sitemap.xml'
+    | '/landlord/signup'
     | '/rooms/$roomId'
     | '/settings/notifications'
   fileRoutesById: FileRoutesById
@@ -115,7 +151,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApplicationsRoute: typeof ApplicationsRoute
   BrowseRoute: typeof BrowseRoute
-  LandlordRoute: typeof LandlordRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  LandlordRoute: typeof LandlordRouteWithChildren
+  LoginRoute: typeof LoginRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   RoomsRoomIdRoute: typeof RoomsRoomIdRoute
   SettingsNotificationsRoute: typeof SettingsNotificationsRoute
@@ -130,11 +168,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/landlord': {
       id: '/landlord'
       path: '/landlord'
       fullPath: '/landlord'
       preLoaderRoute: typeof LandlordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/browse': {
@@ -172,14 +224,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RoomsRoomIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/landlord/signup': {
+      id: '/landlord/signup'
+      path: '/signup'
+      fullPath: '/landlord/signup'
+      preLoaderRoute: typeof LandlordSignupRouteImport
+      parentRoute: typeof LandlordRoute
+    }
   }
 }
+
+interface LandlordRouteChildren {
+  LandlordSignupRoute: typeof LandlordSignupRoute
+}
+
+const LandlordRouteChildren: LandlordRouteChildren = {
+  LandlordSignupRoute: LandlordSignupRoute,
+}
+
+const LandlordRouteWithChildren = LandlordRoute._addFileChildren(
+  LandlordRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApplicationsRoute: ApplicationsRoute,
   BrowseRoute: BrowseRoute,
-  LandlordRoute: LandlordRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  LandlordRoute: LandlordRouteWithChildren,
+  LoginRoute: LoginRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   RoomsRoomIdRoute: RoomsRoomIdRoute,
   SettingsNotificationsRoute: SettingsNotificationsRoute,
