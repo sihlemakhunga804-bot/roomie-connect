@@ -33,7 +33,7 @@ const signupSchema = z.object({
 
 type SignupValues = z.infer<typeof signupSchema>;
 
-export const Route = createFileRoute("/landlord/signup" as any)({
+export const Route = createFileRoute("/landlord/signup")({
   component: LandlordSignup,
 });
 
