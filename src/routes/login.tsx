@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { Mail, Lock, ArrowRight, Home, User as UserIcon } from "lucide-react";
 import { login, loginSchema, type UserRole } from "@/lib/auth";
 
-type LoginValues = z.infer<typeof loginSchema>;
+type LoginValues = z.input<typeof loginSchema>;
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
