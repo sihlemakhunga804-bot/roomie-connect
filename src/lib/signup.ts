@@ -81,27 +81,46 @@ export function clearSignupSession(): void {
   window.sessionStorage.removeItem(SIGNUP_SESSION_KEY);
 }
 
+// Check if a user with this phone already exists
+export function phoneExists(phone: string): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const usersRaw = window.localStorage.getItem("roomie:users:v1");
+    if (!usersRaw) return false;
+    const users = JSON.parse(usersRaw);
+    return !!users[phone];
+  } catch {
+    return false;
+  }
+}
+
 // Mock SMS verification - in production, this would call a backend service
 export function sendVerificationCode(phone: string): string {
   // Generate a mock 4-digit code
   const code = Math.floor(1000 + Math.random() * 9000).toString();
-  
+
   if (typeof window !== "undefined") {
     // Store the code in sessionStorage for demo purposes
     window.sessionStorage.setItem("roomie:verification-code:temp", code);
     console.info(`[roomie:sms] Verification code sent to ${phone}: ${code}`);
   }
-  
+
   return code;
 }
 
-export function verifyCode(enteredCode: string): boolean {
-  if (typeof window === "undefined") return false;
+export type VerifyResult =
+  | { ok: true }
+  | { ok: false; reason: "no-code" | "mismatch" | "unavailable" };
+
+export function verifyCode(enteredCode: string): VerifyResult {
+  if (typeof window === "undefined") return { ok: false, reason: "unavailable" };
   try {
     const storedCode = window.sessionStorage.getItem("roomie:verification-code:temp");
-    return storedCode === enteredCode;
+    if (!storedCode) return { ok: false, reason: "no-code" };
+    if (storedCode !== enteredCode) return { ok: false, reason: "mismatch" };
+    return { ok: true };
   } catch {
-    return false;
+    return { ok: false, reason: "unavailable" };
   }
 }
 
