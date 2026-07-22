@@ -312,16 +312,18 @@ function VerificationStep({
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSendCode = () => {
-    if (session?.phone) {
+    const phone = session?.phone;
+    if (phone) {
       setIsLoading(true);
       setTimeout(() => {
-        sendVerificationCode(session.phone);
+        sendVerificationCode(phone);
         setVerificationCodeSent(true);
         setIsLoading(false);
-        toast.success(`Verification code sent to ${session.phone}`);
+        toast.success(`Verification code sent to ${phone}`);
       }, 600);
     }
   };
+
 
   const onSubmit = (data: VerificationInput) => {
     if (verifyCode(data.code)) {
