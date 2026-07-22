@@ -4,7 +4,7 @@ export type UserRole = "tenant" | "landlord";
 
 export type User = {
   id: string;
-  email: string;
+  phone: string;
   name: string;
   role: UserRole;
   rememberMe: boolean;
@@ -12,7 +12,11 @@ export type User = {
 };
 
 export const loginSchema = z.object({
-  email: z.string().email({ message: "Enter a valid email address" }),
+  phone: z
+    .string()
+    .min(10, { message: "Enter a valid phone number" })
+    .max(20)
+    .regex(/^[0-9+()\-\s]+$/, { message: "Digits, spaces, +, -, () only" }),
   password: z.string().min(1, { message: "Password is required" }),
   rememberMe: z.boolean().default(false),
 });
@@ -21,32 +25,6 @@ export type LoginInput = z.infer<typeof loginSchema>;
 
 const AUTH_KEY = "roomie:auth:v1";
 const REMEMBER_ME_KEY = "roomie:remember-me:v1";
-
-// Mock user database for demo purposes
-const MOCK_USERS: Record<string, { password: string; user: User }> = {
-  "tenant@example.com": {
-    password: "password123",
-    user: {
-      id: "user_tenant_1",
-      email: "tenant@example.com",
-      name: "Sarah Johnson",
-      role: "tenant",
-      rememberMe: false,
-      createdAt: new Date().toISOString(),
-    },
-  },
-  "landlord@example.com": {
-    password: "password123",
-    user: {
-      id: "user_landlord_1",
-      email: "landlord@example.com",
-      name: "John Smith",
-      role: "landlord",
-      rememberMe: false,
-      createdAt: new Date().toISOString(),
-    },
-  },
-};
 
 export function getCurrentUser(): User | null {
   if (typeof window === "undefined") return null;
@@ -60,28 +38,39 @@ export function getCurrentUser(): User | null {
   }
 }
 
-export function login(email: string, password: string, rememberMe: boolean): User | null {
-  const mockEntry = MOCK_USERS[email];
-  if (!mockEntry || mockEntry.password !== password) {
-    return null; // Invalid credentials
-  }
+export function login(phone: string, password: string, rememberMe: boolean): User | null {
+  if (typeof window === "undefined") return null;
 
-  const user: User = {
-    ...mockEntry.user,
-    rememberMe,
-  };
+  try {
+    const usersRaw = window.localStorage.getItem("roomie:users:v1");
+    const users = usersRaw ? JSON.parse(usersRaw) : {};
 
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+    const user = users[phone];
+    if (!user || user.password !== password) {
+      return null; // Invalid credentials
+    }
+
+    const loggedInUser: User = {
+      id: user.id,
+      phone: user.phone,
+      name: user.name,
+      role: user.role,
+      rememberMe,
+      createdAt: user.createdAt,
+    };
+
+    window.localStorage.setItem(AUTH_KEY, JSON.stringify(loggedInUser));
     if (rememberMe) {
-      window.localStorage.setItem(REMEMBER_ME_KEY, email);
+      window.localStorage.setItem(REMEMBER_ME_KEY, phone);
     } else {
       window.localStorage.removeItem(REMEMBER_ME_KEY);
     }
     window.dispatchEvent(new CustomEvent("roomie:auth:changed"));
-  }
 
-  return user;
+    return loggedInUser;
+  } catch {
+    return null;
+  }
 }
 
 export function logout(): void {
@@ -91,7 +80,7 @@ export function logout(): void {
   window.dispatchEvent(new CustomEvent("roomie:auth:changed"));
 }
 
-export function getRememberedEmail(): string | null {
+export function getRememberedPhone(): string | null {
   if (typeof window === "undefined") return null;
   try {
     return window.localStorage.getItem(REMEMBER_ME_KEY);

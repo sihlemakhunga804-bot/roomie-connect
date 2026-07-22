@@ -218,13 +218,15 @@ function BasicInfoStep({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name or Nickname</FormLabel>
+                  <FormLabel htmlFor="name">Name or Nickname</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                       <Input
+                        id="name"
                         placeholder="e.g. Sarah or Sunrise Properties"
                         className="pl-10"
+                        autoComplete="name"
                         {...field}
                       />
                     </div>
@@ -239,13 +241,16 @@ function BasicInfoStep({
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contact Number</FormLabel>
+                  <FormLabel htmlFor="phone">Contact Number</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                       <Input
+                        id="phone"
                         placeholder="+27 82 000 0000"
                         className="pl-10"
+                        type="tel"
+                        autoComplete="tel"
                         {...field}
                       />
                     </div>
@@ -260,14 +265,16 @@ function BasicInfoStep({
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel htmlFor="password">Password</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                       <Input
+                        id="password"
                         type="password"
                         placeholder="••••••••"
                         className="pl-10"
+                        autoComplete="current-password"
                         {...field}
                       />
                     </div>

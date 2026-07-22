@@ -14,10 +14,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Mail, ArrowRight, CheckCircle } from "lucide-react";
+import { Phone, ArrowRight, CheckCircle } from "lucide-react";
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email({ message: "Enter a valid email address" }),
+  phone: z
+    .string()
+    .min(10, { message: "Enter a valid phone number" })
+    .max(20)
+    .regex(/^[0-9+()−\s]+$/, { message: "Digits, spaces, +, -, () only" }),
 });
 
 type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
@@ -34,7 +38,7 @@ function ForgotPasswordPage() {
   const form = useForm<ForgotPasswordValues>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
-      email: "",
+      phone: "",
     },
   });
 
@@ -69,19 +73,19 @@ function ForgotPasswordPage() {
             </div>
             <div className="space-y-2">
               <h1 className="font-display text-4xl font-bold tracking-tight">
-                Check your email
+                Check your SMS
               </h1>
               <p className="text-muted-foreground">
-                We've sent a password recovery link to <strong>{form.getValues("email")}</strong>
+                We've sent a password recovery code to <strong>{form.getValues("phone")}</strong>
               </p>
             </div>
 
             <div className="space-y-4 bg-card border border-border rounded-2xl p-6">
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p>• Check your spam folder if you don't see it</p>
-                <p>• The link expires in 24 hours</p>
-                <p>• Click the link to reset your password</p>
-              </div>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>• Check your SMS inbox if you don't see it</p>
+              <p>• The code expires in 24 hours</p>
+              <p>• Use the code to reset your password</p>
+            </div>
             </div>
 
             <Button
@@ -92,7 +96,7 @@ function ForgotPasswordPage() {
             </Button>
 
             <p className="text-sm text-muted-foreground">
-              Didn't receive the email?{" "}
+              Didn't receive the SMS?{" "}
               <button
                 onClick={() => {
                   setSubmitted(false);
@@ -130,7 +134,7 @@ function ForgotPasswordPage() {
               Forgot your password?
             </h1>
             <p className="text-muted-foreground">
-              Enter your email address and we'll send you a link to reset your password.
+              Enter your phone number and we'll send you a code to reset your password.
             </p>
           </div>
 
@@ -139,17 +143,19 @@ function ForgotPasswordPage() {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                 <FormField
                   control={form.control}
-                  name="email"
+                  name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email Address</FormLabel>
+                      <FormLabel htmlFor="phone">Phone Number</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                           <Input
-                            placeholder="you@example.com"
+                            id="phone"
+                            placeholder="+27 82 000 0000"
                             className="pl-10"
-                            type="email"
+                            type="tel"
+                            autoComplete="tel"
                             {...field}
                           />
                         </div>
@@ -164,7 +170,7 @@ function ForgotPasswordPage() {
                   disabled={isLoading}
                   className="w-full group py-6 text-lg"
                 >
-                  {isLoading ? "Sending..." : "Send recovery link"}
+                  {isLoading ? "Sending..." : "Send recovery code"}
                   {!isLoading && (
                     <ArrowRight className="ml-2 size-5 transition-transform group-hover:translate-x-1" />
                   )}

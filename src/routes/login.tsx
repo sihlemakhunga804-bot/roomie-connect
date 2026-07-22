@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -15,10 +15,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Mail, Lock, ArrowRight, Home, User as UserIcon } from "lucide-react";
-import { login, loginSchema, type UserRole } from "@/lib/auth";
-
-type LoginValues = z.input<typeof loginSchema>;
+import { Phone, Lock, ArrowRight, Home, User as UserIcon, ArrowLeft } from "lucide-react";
+import { login, loginSchema, getRememberedPhone, type LoginInput } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -26,32 +24,28 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
-  const [role, setRole] = useState<UserRole | null>(null);
+  const [role, setRole] = useState<"tenant" | "landlord" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const rememberedPhone = getRememberedPhone();
 
-  const form = useForm<LoginValues>({
+  const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "",
+      phone: rememberedPhone || "",
       password: "",
-      rememberMe: false,
+      rememberMe: !!rememberedPhone,
     },
   });
 
-  function onSubmit(data: LoginValues) {
+  function onSubmit(data: LoginInput) {
     setIsLoading(true);
     // Simulate network delay
     setTimeout(() => {
-      const user = login(data.email, data.password, data.rememberMe ?? false);
+      const user = login(data.phone, data.password, data.rememberMe);
       setIsLoading(false);
 
       if (!user) {
-        toast.error("Invalid email or password");
-        return;
-      }
-
-      if (user.role !== role) {
-        toast.error(`This account is registered as a ${user.role}, not a ${role}`);
+        toast.error("Invalid phone number or password");
         return;
       }
 
@@ -61,7 +55,7 @@ function LoginPage() {
       if (user.role === "landlord") {
         navigate({ to: "/landlord" });
       } else {
-        navigate({ to: "/applications" });
+        navigate({ to: "/browse" });
       }
     }, 600);
   }
@@ -98,7 +92,7 @@ function LoginPage() {
                   <div>
                     <h3 className="font-display text-xl font-semibold mb-1">I'm looking for a room</h3>
                     <p className="text-sm text-muted-foreground">
-                      Sign in to find your next home and track applications.
+                      Sign in to browse homes and track applications.
                     </p>
                   </div>
                   <UserIcon className="size-6 text-primary flex-shrink-0 mt-1" />
@@ -113,7 +107,7 @@ function LoginPage() {
                   <div>
                     <h3 className="font-display text-xl font-semibold mb-1">I'm a landlord</h3>
                     <p className="text-sm text-muted-foreground">
-                      Sign in to manage your properties and tenant applications.
+                      Sign in to manage properties and applications.
                     </p>
                   </div>
                   <Home className="size-6 text-primary flex-shrink-0 mt-1" />
@@ -123,7 +117,7 @@ function LoginPage() {
 
             <div className="text-center text-sm text-muted-foreground">
               Don't have an account?{" "}
-              <Link to="/" className="text-primary font-medium hover:underline">
+              <Link to="/signup" className="text-primary font-medium hover:underline">
                 Sign up here
               </Link>
             </div>
@@ -149,16 +143,16 @@ function LoginPage() {
           <div className="text-center space-y-2">
             <button
               onClick={() => setRole(null)}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 mb-4"
             >
-              ← Back
+              <ArrowLeft className="size-4" /> Back
             </button>
             <h1 className="font-display text-4xl font-bold tracking-tight">
               {role === "landlord" ? "Landlord Login" : "Tenant Login"}
             </h1>
             <p className="text-muted-foreground">
               {role === "landlord"
-                ? "Sign in to manage your rentals and find the perfect tenants."
+                ? "Sign in to manage your properties and find great tenants."
                 : "Sign in to find your next home and track your applications."}
             </p>
           </div>
@@ -168,17 +162,19 @@ function LoginPage() {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
                 <FormField
                   control={form.control}
-                  name="email"
+                  name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email Address</FormLabel>
+                      <FormLabel htmlFor="phone">Phone Number</FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                           <Input
-                            placeholder="you@example.com"
+                            id="phone"
+                            placeholder="+27 82 000 0000"
                             className="pl-10"
-                            type="email"
+                            type="tel"
+                            autoComplete="tel"
                             {...field}
                           />
                         </div>
@@ -194,7 +190,7 @@ function LoginPage() {
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center justify-between">
-                        <FormLabel>Password</FormLabel>
+                        <FormLabel htmlFor="password">Password</FormLabel>
                         <Link
                           to="/forgot-password"
                           className="text-xs text-primary hover:underline"
@@ -206,9 +202,11 @@ function LoginPage() {
                         <div className="relative">
                           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                           <Input
+                            id="password"
                             type="password"
                             placeholder="••••••••"
                             className="pl-10"
+                            autoComplete="current-password"
                             {...field}
                           />
                         </div>
@@ -225,11 +223,12 @@ function LoginPage() {
                     <FormItem className="flex items-center space-x-2 space-y-0">
                       <FormControl>
                         <Checkbox
+                          id="rememberMe"
                           checked={field.value}
                           onCheckedChange={field.onChange}
                         />
                       </FormControl>
-                      <FormLabel className="font-normal cursor-pointer">
+                      <FormLabel htmlFor="rememberMe" className="font-normal cursor-pointer">
                         Remember me
                       </FormLabel>
                     </FormItem>
@@ -252,22 +251,15 @@ function LoginPage() {
 
           <div className="space-y-3 text-center text-sm text-muted-foreground">
             <p>
-              {role === "landlord"
-                ? "Don't have a landlord account? "
-                : "Don't have an account? "}
-              <Link
-                to="/signup"
-                className="text-primary font-medium hover:underline"
-              >
+              Don't have an account?{" "}
+              <Link to="/signup" className="text-primary font-medium hover:underline">
                 Sign up
               </Link>
             </p>
             <div className="flex items-center gap-2 justify-center text-xs">
               <span>Demo credentials:</span>
               <code className="bg-muted px-2 py-1 rounded font-mono text-xs">
-                {role === "landlord"
-                  ? "landlord@example.com"
-                  : "tenant@example.com"}
+                +27 82 000 0000
               </code>
             </div>
             <p className="text-xs">Password: password123</p>
