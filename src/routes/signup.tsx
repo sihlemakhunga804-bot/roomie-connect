@@ -25,6 +25,7 @@ import {
   sendVerificationCode,
   verifyCode,
   completeSignup,
+  phoneExists,
   type BasicInfoInput,
   type VerificationInput,
   type ProfileSetupInput,
