@@ -256,7 +256,7 @@ function LoginPage() {
                 ? "Don't have a landlord account? "
                 : "Don't have an account? "}
               <Link
-                to={role === "landlord" ? "/landlord/signup" : "/"}
+                to="/signup"
                 className="text-primary font-medium hover:underline"
               >
                 Sign up
