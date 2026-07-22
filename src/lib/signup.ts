@@ -107,17 +107,33 @@ export function verifyCode(enteredCode: string): boolean {
 
 // Complete signup and create user account
 export function completeSignup(data: SignupData): boolean {
-  if (typeof window === "undefined") return false;
+  if (typeof window === "undefined") {
+    console.error("[roomie:signup] Window is undefined");
+    return false;
+  }
 
   try {
+    // Validate required fields
+    if (!data.role || !data.name || !data.phone || !data.password) {
+      console.error("[roomie:signup] Missing required fields:", {
+        role: !!data.role,
+        name: !!data.name,
+        phone: !!data.phone,
+        password: !!data.password,
+      });
+      return false;
+    }
+
     // In a real app, this would call a backend API
-    const users = JSON.parse(window.localStorage.getItem("roomie:users:v1") || "{}");
+    const usersRaw = window.localStorage.getItem("roomie:users:v1");
+    const users = usersRaw ? JSON.parse(usersRaw) : {};
     
     if (users[data.phone]) {
+      console.warn(`[roomie:signup] User with phone ${data.phone} already exists`);
       return false; // User already exists
     }
 
-    users[data.phone] = {
+    const newUser = {
       id: `user_${Date.now()}`,
       name: data.name,
       phone: data.phone,
@@ -127,10 +143,13 @@ export function completeSignup(data: SignupData): boolean {
       createdAt: new Date().toISOString(),
     };
 
+    users[data.phone] = newUser;
     window.localStorage.setItem("roomie:users:v1", JSON.stringify(users));
+    console.info(`[roomie:signup] Account created successfully for ${data.role}: ${data.phone}`);
     clearSignupSession();
     return true;
-  } catch {
+  } catch (error) {
+    console.error("[roomie:signup] Error during account creation:", error);
     return false;
   }
 }

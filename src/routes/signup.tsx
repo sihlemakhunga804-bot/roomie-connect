@@ -453,8 +453,15 @@ function ProfileSetupStep({
   };
 
   const handleSkip = () => {
-    const session = getSignupSession();
-    if (session && session.role && session.name && session.phone && session.password) {
+    setIsLoading(true);
+    setTimeout(() => {
+      const session = getSignupSession();
+      if (!session || !session.role || !session.name || !session.phone || !session.password) {
+        setIsLoading(false);
+        toast.error("Missing required information. Please go back and complete all steps.");
+        return;
+      }
+
       const success = completeSignup({
         role: session.role as SignupRole,
         name: session.name,
@@ -462,10 +469,13 @@ function ProfileSetupStep({
         password: session.password,
       });
 
+      setIsLoading(false);
       if (success) {
         onComplete();
+      } else {
+        toast.error("Failed to create account. Please try again.");
       }
-    }
+    }, 600);
   };
 
   return (
@@ -552,9 +562,10 @@ function ProfileSetupStep({
 
         <button
           onClick={handleSkip}
-          className="w-full mt-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          disabled={isLoading}
+          className="w-full mt-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
         >
-          Skip for now
+          {isLoading ? "Setting up..." : "Skip for now"}
         </button>
       </div>
     </div>
