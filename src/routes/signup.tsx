@@ -186,6 +186,13 @@ function BasicInfoStep({
   });
 
   const onSubmit = (data: BasicInfoInput) => {
+    if (phoneExists(data.phone)) {
+      form.setError("phone", {
+        type: "manual",
+        message: "An account with this phone already exists. Try signing in instead.",
+      });
+      return;
+    }
     setSignupSession({
       name: data.name,
       phone: data.phone,
