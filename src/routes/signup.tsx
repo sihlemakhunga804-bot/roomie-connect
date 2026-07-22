@@ -25,6 +25,7 @@ import {
   sendVerificationCode,
   verifyCode,
   completeSignup,
+  phoneExists,
   type BasicInfoInput,
   type VerificationInput,
   type ProfileSetupInput,
@@ -185,6 +186,13 @@ function BasicInfoStep({
   });
 
   const onSubmit = (data: BasicInfoInput) => {
+    if (phoneExists(data.phone)) {
+      form.setError("phone", {
+        type: "manual",
+        message: "An account with this phone already exists. Try signing in instead.",
+      });
+      return;
+    }
     setSignupSession({
       name: data.name,
       phone: data.phone,
@@ -317,28 +325,44 @@ function VerificationStep({
 
   const session = getSignupSession();
   const [isLoading, setIsLoading] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
 
   const handleSendCode = () => {
     const phone = session?.phone;
-    if (phone) {
-      setIsLoading(true);
-      setTimeout(() => {
+    if (!phone) {
+      setSendError("We couldn't find your phone number. Please go back and re-enter it.");
+      return;
+    }
+    setSendError(null);
+    setIsLoading(true);
+    setTimeout(() => {
+      try {
         sendVerificationCode(phone);
         setVerificationCodeSent(true);
-        setIsLoading(false);
         toast.success(`Verification code sent to ${phone}`);
-      }, 600);
-    }
+      } catch {
+        setSendError("Something went wrong sending the code. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    }, 600);
   };
 
 
   const onSubmit = (data: VerificationInput) => {
-    if (verifyCode(data.code)) {
+    const result = verifyCode(data.code);
+    if (result.ok) {
       setSignupSession({ verificationCode: data.code });
       onVerified();
-    } else {
-      toast.error("Invalid verification code");
+      return;
     }
+    const message =
+      result.reason === "no-code"
+        ? "Your code has expired. Tap Resend to get a new one."
+        : result.reason === "mismatch"
+          ? "That code doesn't match. Double-check the SMS and try again."
+          : "We couldn't verify the code right now. Please try again.";
+    form.setError("code", { type: "manual", message });
   };
 
   return (
@@ -360,14 +384,21 @@ function VerificationStep({
 
       <div className="bg-card border border-border rounded-2xl p-8 shadow-sm">
         {!verificationCodeSent ? (
-          <Button
-            onClick={handleSendCode}
-            disabled={isLoading}
-            className="w-full group py-6 text-lg"
-          >
-            {isLoading ? "Sending..." : "Send Verification Code"}
-            <ArrowRight className="ml-2 size-5 transition-transform group-hover:translate-x-1" />
-          </Button>
+          <div className="space-y-3">
+            <Button
+              onClick={handleSendCode}
+              disabled={isLoading}
+              className="w-full group py-6 text-lg"
+            >
+              {isLoading ? "Sending..." : "Send Verification Code"}
+              <ArrowRight className="ml-2 size-5 transition-transform group-hover:translate-x-1" />
+            </Button>
+            {sendError && (
+              <p role="alert" className="text-sm text-destructive text-center">
+                {sendError}
+              </p>
+            )}
+          </div>
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -381,8 +412,13 @@ function VerificationStep({
                       <Input
                         placeholder="0000"
                         maxLength={4}
+                        inputMode="numeric"
                         className="text-center text-2xl tracking-widest"
                         {...field}
+                        onChange={(e) => {
+                          form.clearErrors("code");
+                          field.onChange(e);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -394,6 +430,20 @@ function VerificationStep({
                 Verify
                 <ArrowRight className="ml-2 size-5 transition-transform group-hover:translate-x-1" />
               </Button>
+
+              <button
+                type="button"
+                onClick={handleSendCode}
+                disabled={isLoading}
+                className="w-full text-sm text-primary hover:underline disabled:opacity-50"
+              >
+                {isLoading ? "Resending..." : "Resend code"}
+              </button>
+              {sendError && (
+                <p role="alert" className="text-sm text-destructive text-center">
+                  {sendError}
+                </p>
+              )}
             </form>
           </Form>
         )}
