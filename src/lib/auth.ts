@@ -18,7 +18,7 @@ export const loginSchema = z.object({
     .max(20)
     .regex(/^[0-9+()\-\s]+$/, { message: "Digits, spaces, +, -, () only" }),
   password: z.string().min(1, { message: "Password is required" }),
-  rememberMe: z.boolean().default(false),
+  rememberMe: z.boolean(),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
