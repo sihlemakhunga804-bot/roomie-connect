@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LandlordRouteImport } from './routes/landlord'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -18,11 +19,15 @@ import { Route as ApplicationsRouteImport } from './routes/applications'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SettingsNotificationsRouteImport } from './routes/settings.notifications'
 import { Route as RoomsRoomIdRouteImport } from './routes/rooms.$roomId'
-import { Route as LandlordSignupRouteImport } from './routes/landlord.signup'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -65,21 +70,16 @@ const RoomsRoomIdRoute = RoomsRoomIdRouteImport.update({
   path: '/rooms/$roomId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LandlordSignupRoute = LandlordSignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => LandlordRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/applications': typeof ApplicationsRoute
   '/browse': typeof BrowseRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/landlord': typeof LandlordRouteWithChildren
+  '/landlord': typeof LandlordRoute
   '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/landlord/signup': typeof LandlordSignupRoute
   '/rooms/$roomId': typeof RoomsRoomIdRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
 }
@@ -88,10 +88,10 @@ export interface FileRoutesByTo {
   '/applications': typeof ApplicationsRoute
   '/browse': typeof BrowseRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/landlord': typeof LandlordRouteWithChildren
+  '/landlord': typeof LandlordRoute
   '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/landlord/signup': typeof LandlordSignupRoute
   '/rooms/$roomId': typeof RoomsRoomIdRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
 }
@@ -101,10 +101,10 @@ export interface FileRoutesById {
   '/applications': typeof ApplicationsRoute
   '/browse': typeof BrowseRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/landlord': typeof LandlordRouteWithChildren
+  '/landlord': typeof LandlordRoute
   '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/landlord/signup': typeof LandlordSignupRoute
   '/rooms/$roomId': typeof RoomsRoomIdRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
 }
@@ -117,8 +117,8 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/landlord'
     | '/login'
+    | '/signup'
     | '/sitemap.xml'
-    | '/landlord/signup'
     | '/rooms/$roomId'
     | '/settings/notifications'
   fileRoutesByTo: FileRoutesByTo
@@ -129,8 +129,8 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/landlord'
     | '/login'
+    | '/signup'
     | '/sitemap.xml'
-    | '/landlord/signup'
     | '/rooms/$roomId'
     | '/settings/notifications'
   id:
@@ -141,8 +141,8 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/landlord'
     | '/login'
+    | '/signup'
     | '/sitemap.xml'
-    | '/landlord/signup'
     | '/rooms/$roomId'
     | '/settings/notifications'
   fileRoutesById: FileRoutesById
@@ -152,8 +152,9 @@ export interface RootRouteChildren {
   ApplicationsRoute: typeof ApplicationsRoute
   BrowseRoute: typeof BrowseRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
-  LandlordRoute: typeof LandlordRouteWithChildren
+  LandlordRoute: typeof LandlordRoute
   LoginRoute: typeof LoginRoute
+  SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   RoomsRoomIdRoute: typeof RoomsRoomIdRoute
   SettingsNotificationsRoute: typeof SettingsNotificationsRoute
@@ -166,6 +167,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -224,35 +232,17 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RoomsRoomIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/landlord/signup': {
-      id: '/landlord/signup'
-      path: '/signup'
-      fullPath: '/landlord/signup'
-      preLoaderRoute: typeof LandlordSignupRouteImport
-      parentRoute: typeof LandlordRoute
-    }
   }
 }
-
-interface LandlordRouteChildren {
-  LandlordSignupRoute: typeof LandlordSignupRoute
-}
-
-const LandlordRouteChildren: LandlordRouteChildren = {
-  LandlordSignupRoute: LandlordSignupRoute,
-}
-
-const LandlordRouteWithChildren = LandlordRoute._addFileChildren(
-  LandlordRouteChildren,
-)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApplicationsRoute: ApplicationsRoute,
   BrowseRoute: BrowseRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
-  LandlordRoute: LandlordRouteWithChildren,
+  LandlordRoute: LandlordRoute,
   LoginRoute: LoginRoute,
+  SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   RoomsRoomIdRoute: RoomsRoomIdRoute,
   SettingsNotificationsRoute: SettingsNotificationsRoute,
@@ -260,3 +250,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
