@@ -29,6 +29,7 @@ import {
   type BasicInfoInput,
   type VerificationInput,
   type ProfileSetupInput,
+  type SignupData,
 } from "@/lib/signup";
 import { Home, User as UserIcon, Phone, Lock, ArrowRight, CheckCircle, ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 
