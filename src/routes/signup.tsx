@@ -29,8 +29,9 @@ import {
   type BasicInfoInput,
   type VerificationInput,
   type ProfileSetupInput,
+  type SignupData,
 } from "@/lib/signup";
-import { Home, User as UserIcon, Phone, Lock, ArrowRight, CheckCircle, ArrowLeft } from "lucide-react";
+import { Home, User as UserIcon, Phone, Lock, ArrowRight, CheckCircle, ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 
 export const Route = createFileRoute("/signup")({
   component: SignupFlow,
@@ -326,6 +327,7 @@ function VerificationStep({
   const session = getSignupSession();
   const [isLoading, setIsLoading] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [verified, setVerified] = useState(false);
 
   const handleSendCode = () => {
     const phone = session?.phone;
@@ -353,7 +355,11 @@ function VerificationStep({
     const result = verifyCode(data.code);
     if (result.ok) {
       setSignupSession({ verificationCode: data.code });
-      onVerified();
+      setVerified(true);
+      toast.success("Phone verified!");
+      setTimeout(() => {
+        onVerified();
+      }, 1200);
       return;
     }
     const message =
@@ -364,6 +370,30 @@ function VerificationStep({
           : "We couldn't verify the code right now. Please try again.";
     form.setError("code", { type: "manual", message });
   };
+
+  if (verified) {
+    return (
+      <div className="w-full max-w-md space-y-8 text-center">
+        <div className="flex justify-center">
+          <div className="rounded-full bg-green-100 p-4">
+            <CheckCircle className="size-8 text-green-600" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <h1 className="font-display text-4xl font-bold tracking-tight">
+            Number verified
+          </h1>
+          <p className="text-muted-foreground">
+            Great — {session?.phone} is confirmed.
+          </p>
+        </div>
+        <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="size-4 animate-spin" />
+          Taking you to the next step…
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-md space-y-8">
@@ -475,58 +505,53 @@ function ProfileSetupStep({
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const onSubmit = (data: ProfileSetupInput) => {
+  const finalize = (profileData?: SignupData["profileData"]) => {
+    setSubmitError(null);
     setIsLoading(true);
     setTimeout(() => {
       const session = getSignupSession();
-      if (session && session.role && session.name && session.phone && session.password) {
+      if (!session || !session.role || !session.name || !session.phone || !session.password) {
+        setIsLoading(false);
+        setSubmitError(
+          "Some of your details are missing. Please go back and complete the earlier steps."
+        );
+        return;
+      }
+
+      try {
         const success = completeSignup({
           role: session.role as SignupRole,
           name: session.name,
           phone: session.phone,
           password: session.password,
-          profileData: {
-            landlord: { propertyName: data.propertyName },
-            tenant: { preferredLocation: data.preferredLocation, budget: data.budget },
-          },
+          profileData,
         });
 
         setIsLoading(false);
         if (success) {
           onComplete();
         } else {
-          toast.error("Failed to create account");
+          setSubmitError(
+            "We couldn't create your account. An account with this phone may already exist — try signing in instead."
+          );
         }
-      }
-    }, 600);
-  };
-
-  const handleSkip = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      const session = getSignupSession();
-      if (!session || !session.role || !session.name || !session.phone || !session.password) {
+      } catch {
         setIsLoading(false);
-        toast.error("Missing required information. Please go back and complete all steps.");
-        return;
-      }
-
-      const success = completeSignup({
-        role: session.role as SignupRole,
-        name: session.name,
-        phone: session.phone,
-        password: session.password,
-      });
-
-      setIsLoading(false);
-      if (success) {
-        onComplete();
-      } else {
-        toast.error("Failed to create account. Please try again.");
+        setSubmitError("Something went wrong finishing signup. Please try again.");
       }
     }, 600);
   };
+
+  const onSubmit = (data: ProfileSetupInput) => {
+    finalize({
+      landlord: { propertyName: data.propertyName },
+      tenant: { preferredLocation: data.preferredLocation, budget: data.budget },
+    });
+  };
+
+  const handleSkip = () => finalize();
 
   return (
     <div className="w-full max-w-md space-y-8">
@@ -604,8 +629,17 @@ function ProfileSetupStep({
             )}
 
             <Button type="submit" disabled={isLoading} className="w-full group py-6 text-lg">
-              {isLoading ? "Setting up..." : "Complete Setup"}
-              <ArrowRight className="ml-2 size-5 transition-transform group-hover:translate-x-1" />
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 size-5 animate-spin" />
+                  Setting up...
+                </>
+              ) : (
+                <>
+                  Complete Setup
+                  <ArrowRight className="ml-2 size-5 transition-transform group-hover:translate-x-1" />
+                </>
+              )}
             </Button>
           </form>
         </Form>
@@ -617,6 +651,25 @@ function ProfileSetupStep({
         >
           {isLoading ? "Setting up..." : "Skip for now"}
         </button>
+
+        {submitError && (
+          <div
+            role="alert"
+            className="mt-4 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"
+          >
+            <AlertCircle className="size-4 mt-0.5 flex-shrink-0" />
+            <div className="space-y-1">
+              <p>{submitError}</p>
+              <p className="text-xs text-destructive/80">
+                Already have an account?{" "}
+                <Link to="/login" className="underline font-medium">
+                  Sign in instead
+                </Link>
+                .
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
