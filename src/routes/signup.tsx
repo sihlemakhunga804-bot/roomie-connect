@@ -326,6 +326,7 @@ function VerificationStep({
   const session = getSignupSession();
   const [isLoading, setIsLoading] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [verified, setVerified] = useState(false);
 
   const handleSendCode = () => {
     const phone = session?.phone;
@@ -353,7 +354,11 @@ function VerificationStep({
     const result = verifyCode(data.code);
     if (result.ok) {
       setSignupSession({ verificationCode: data.code });
-      onVerified();
+      setVerified(true);
+      toast.success("Phone verified!");
+      setTimeout(() => {
+        onVerified();
+      }, 1200);
       return;
     }
     const message =
@@ -364,6 +369,30 @@ function VerificationStep({
           : "We couldn't verify the code right now. Please try again.";
     form.setError("code", { type: "manual", message });
   };
+
+  if (verified) {
+    return (
+      <div className="w-full max-w-md space-y-8 text-center">
+        <div className="flex justify-center">
+          <div className="rounded-full bg-green-100 p-4">
+            <CheckCircle className="size-8 text-green-600" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <h1 className="font-display text-4xl font-bold tracking-tight">
+            Number verified
+          </h1>
+          <p className="text-muted-foreground">
+            Great — {session?.phone} is confirmed.
+          </p>
+        </div>
+        <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="size-4 animate-spin" />
+          Taking you to the next step…
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-md space-y-8">
