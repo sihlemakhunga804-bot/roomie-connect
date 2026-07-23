@@ -30,7 +30,7 @@ import {
   type VerificationInput,
   type ProfileSetupInput,
 } from "@/lib/signup";
-import { Home, User as UserIcon, Phone, Lock, ArrowRight, CheckCircle, ArrowLeft } from "lucide-react";
+import { Home, User as UserIcon, Phone, Lock, ArrowRight, CheckCircle, ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 
 export const Route = createFileRoute("/signup")({
   component: SignupFlow,
