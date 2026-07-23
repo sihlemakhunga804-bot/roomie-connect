@@ -1,5 +1,7 @@
 # Roomie Connect
 
+![Roomie Connect Preview](public/preview.png)
+
 ## Project Overview
 
 Roomie Connect is a modern, frontend-heavy prototype for a South African roommate-finding platform. It is designed to facilitate connections between tenants seeking accommodation and landlords listing properties. The application focuses on providing a seamless user experience for both roles, from initial sign-up to managing listings and applications. Currently, it operates without a real backend database, utilizing hard-coded data and browser `localStorage` to simulate complex user flows.
@@ -57,8 +59,4 @@ Experience Roomie Connect live:
 
 [https://roomie-space.lovable.app](https://roomie-space.lovable.app)
 
-## Preview Image
 
-Below is a screenshot from the development console, highlighting some of the accessibility improvements and warnings addressed during development.
-
-![Development Console Warnings](/home/ubuntu/upload/pasted_file_3q0pTg_image.png)
