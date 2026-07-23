@@ -97,3 +97,81 @@ export function getUserRole(): UserRole | null {
   const user = getCurrentUser();
   return user?.role ?? null;
 }
+
+// Password Recovery
+const RECOVERY_CODE_KEY = "roomie:recovery-code:temp";
+const RECOVERY_PHONE_KEY = "roomie:recovery-phone:temp";
+
+export function sendRecoveryCode(phone: string): boolean {
+  if (typeof window === "undefined") return false;
+
+  try {
+    // Check if user exists
+    const usersRaw = window.localStorage.getItem("roomie:users:v1");
+    const users = usersRaw ? JSON.parse(usersRaw) : {};
+
+    if (!users[phone]) {
+      console.warn(`[roomie:auth] No account found for phone: ${phone}`);
+      return false;
+    }
+
+    // Generate a 4-digit recovery code
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
+
+    // Store the code and phone in sessionStorage for demo purposes
+    window.sessionStorage.setItem(RECOVERY_CODE_KEY, code);
+    window.sessionStorage.setItem(RECOVERY_PHONE_KEY, phone);
+
+    console.info(`[roomie:auth] Recovery code sent to ${phone}: ${code}`);
+    return true;
+  } catch (error) {
+    console.error("[roomie:auth] Error sending recovery code:", error);
+    return false;
+  }
+}
+
+export function verifyRecoveryCode(code: string): boolean {
+  if (typeof window === "undefined") return false;
+
+  try {
+    const storedCode = window.sessionStorage.getItem(RECOVERY_CODE_KEY);
+    return storedCode === code;
+  } catch {
+    return false;
+  }
+}
+
+export function resetPassword(phone: string, newPassword: string): boolean {
+  if (typeof window === "undefined") return false;
+
+  try {
+    // Verify the recovery phone matches
+    const recoveryPhone = window.sessionStorage.getItem(RECOVERY_PHONE_KEY);
+    if (recoveryPhone !== phone) {
+      console.error("[roomie:auth] Recovery phone mismatch");
+      return false;
+    }
+
+    // Update the password
+    const usersRaw = window.localStorage.getItem("roomie:users:v1");
+    const users = usersRaw ? JSON.parse(usersRaw) : {};
+
+    if (!users[phone]) {
+      console.error("[roomie:auth] User not found");
+      return false;
+    }
+
+    users[phone].password = newPassword;
+    window.localStorage.setItem("roomie:users:v1", JSON.stringify(users));
+
+    // Clear recovery session
+    window.sessionStorage.removeItem(RECOVERY_CODE_KEY);
+    window.sessionStorage.removeItem(RECOVERY_PHONE_KEY);
+
+    console.info(`[roomie:auth] Password reset successfully for ${phone}`);
+    return true;
+  } catch (error) {
+    console.error("[roomie:auth] Error resetting password:", error);
+    return false;
+  }
+}
