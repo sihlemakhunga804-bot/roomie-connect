@@ -504,58 +504,53 @@ function ProfileSetupStep({
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const onSubmit = (data: ProfileSetupInput) => {
+  const finalize = (profileData?: SignupData["profileData"]) => {
+    setSubmitError(null);
     setIsLoading(true);
     setTimeout(() => {
       const session = getSignupSession();
-      if (session && session.role && session.name && session.phone && session.password) {
+      if (!session || !session.role || !session.name || !session.phone || !session.password) {
+        setIsLoading(false);
+        setSubmitError(
+          "Some of your details are missing. Please go back and complete the earlier steps."
+        );
+        return;
+      }
+
+      try {
         const success = completeSignup({
           role: session.role as SignupRole,
           name: session.name,
           phone: session.phone,
           password: session.password,
-          profileData: {
-            landlord: { propertyName: data.propertyName },
-            tenant: { preferredLocation: data.preferredLocation, budget: data.budget },
-          },
+          profileData,
         });
 
         setIsLoading(false);
         if (success) {
           onComplete();
         } else {
-          toast.error("Failed to create account");
+          setSubmitError(
+            "We couldn't create your account. An account with this phone may already exist — try signing in instead."
+          );
         }
-      }
-    }, 600);
-  };
-
-  const handleSkip = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      const session = getSignupSession();
-      if (!session || !session.role || !session.name || !session.phone || !session.password) {
+      } catch {
         setIsLoading(false);
-        toast.error("Missing required information. Please go back and complete all steps.");
-        return;
-      }
-
-      const success = completeSignup({
-        role: session.role as SignupRole,
-        name: session.name,
-        phone: session.phone,
-        password: session.password,
-      });
-
-      setIsLoading(false);
-      if (success) {
-        onComplete();
-      } else {
-        toast.error("Failed to create account. Please try again.");
+        setSubmitError("Something went wrong finishing signup. Please try again.");
       }
     }, 600);
   };
+
+  const onSubmit = (data: ProfileSetupInput) => {
+    finalize({
+      landlord: { propertyName: data.propertyName },
+      tenant: { preferredLocation: data.preferredLocation, budget: data.budget },
+    });
+  };
+
+  const handleSkip = () => finalize();
 
   return (
     <div className="w-full max-w-md space-y-8">
