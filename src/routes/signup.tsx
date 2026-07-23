@@ -629,8 +629,17 @@ function ProfileSetupStep({
             )}
 
             <Button type="submit" disabled={isLoading} className="w-full group py-6 text-lg">
-              {isLoading ? "Setting up..." : "Complete Setup"}
-              <ArrowRight className="ml-2 size-5 transition-transform group-hover:translate-x-1" />
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 size-5 animate-spin" />
+                  Setting up...
+                </>
+              ) : (
+                <>
+                  Complete Setup
+                  <ArrowRight className="ml-2 size-5 transition-transform group-hover:translate-x-1" />
+                </>
+              )}
             </Button>
           </form>
         </Form>
@@ -642,6 +651,25 @@ function ProfileSetupStep({
         >
           {isLoading ? "Setting up..." : "Skip for now"}
         </button>
+
+        {submitError && (
+          <div
+            role="alert"
+            className="mt-4 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"
+          >
+            <AlertCircle className="size-4 mt-0.5 flex-shrink-0" />
+            <div className="space-y-1">
+              <p>{submitError}</p>
+              <p className="text-xs text-destructive/80">
+                Already have an account?{" "}
+                <Link to="/login" className="underline font-medium">
+                  Sign in instead
+                </Link>
+                .
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
